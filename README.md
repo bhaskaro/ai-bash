@@ -322,6 +322,3 @@ OPENAI_MODEL=nemotron-4-340b-instruct ./bin/ai-sh
 👋 Exiting AI Bash — see you next time!
 ```
 
-```
-
----
