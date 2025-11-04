@@ -1,6 +1,4 @@
 ---
-
-```markdown
 # 🧠 AI Bash — Natural-Language Shell with LLM-Powered Command Execution
 
 AI Bash is an **AI-enabled interactive shell** that converts natural language into **safe, auditable shell commands** — then executes them in a **sandboxed** environment.  
