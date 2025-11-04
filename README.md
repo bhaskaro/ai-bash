@@ -96,7 +96,7 @@ sudo apt update && sudo apt install -y tree findutils
 ### 1️⃣ Clone and enter the repo
 
 ```bash
-git clone git@github.com:bhaskaro/ai-bash.git
+git clone https://github.com/bhaskaro/ai-bash.git
 cd ai-bash
 ```
 
