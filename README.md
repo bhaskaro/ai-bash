@@ -1,4 +1,4 @@
-## ✅ `README.md`
+---
 
 ```markdown
 # 🧠 AI Bash — Natural-Language Shell with LLM-Powered Command Execution
@@ -53,7 +53,7 @@ ai-bash/
 ├── .env.example
 ├── requirements.txt
 ├── bin/
-│   └── ai-sh                  # main launcher (bash)
+│   └── ai-sh
 ├── prompts/
 │   ├── system_shell.md
 │   ├── tool_instructions.md
@@ -61,18 +61,18 @@ ai-bash/
 │   ├── critic.md
 │   └── nl2cmd.md
 ├── src/
-│   ├── cli.py                 # REPL loop
-│   ├── agent.py               # LLM client + tool dispatcher
-│   ├── loop.py                # core logic (fast paths + NL2CMD + tool loop)
-│   ├── policy.py              # optional safety policies
-│   ├── schema.py              # tool schemas for function-calling
+│   ├── cli.py
+│   ├── agent.py
+│   ├── loop.py
+│   ├── policy.py
+│   ├── schema.py
 │   └── tools/
 │       ├── shell.py
 │       ├── fs.py
 │       ├── net.py
 │       ├── sysinfo.py
 │       └── utils.py
-└── pyproject.toml             # optional, if packaging
+└── pyproject.toml
 
 ````
 
@@ -84,8 +84,9 @@ ai-bash/
 - Internet connection for API access
 - A valid **OpenAI-compatible API key**
 - Optional utilities: `tree`, `find`, `du`, `grep`, etc.  
-  ```bash
-  sudo apt update && sudo apt install -y tree findutils
+
+```bash
+sudo apt update && sudo apt install -y tree findutils
 ````
 
 ---
@@ -95,7 +96,7 @@ ai-bash/
 ### 1️⃣ Clone and enter the repo
 
 ```bash
-git clone git@github.com:bhaskaro/ai-bash.git 
+git clone https://github.com/<your-username>/ai-bash.git
 cd ai-bash
 ```
 
@@ -118,7 +119,7 @@ pip install -r requirements.txt
 
 ```bash
 cp .env.example .env
-nano .env   # or vi .env
+nano .env
 ```
 
 Update your `OPENAI_API_KEY`, `OPENAI_MODEL`, and sandbox path.
@@ -145,7 +146,7 @@ Get-Content .env | ForEach-Object {
 }
 ```
 
-Your key is loaded when this prints a partial token:
+Confirm key load:
 
 ```bash
 echo $OPENAI_API_KEY | cut -c1-10
@@ -186,14 +187,14 @@ Example session:
 | Variable                  | Description                                                                                |
 | ------------------------- | ------------------------------------------------------------------------------------------ |
 | `OPENAI_BASE_URL`         | API endpoint (`https://api.openai.com/v1` or NVIDIA `https://integrate.api.nvidia.com/v1`) |
-| `OPENAI_API_KEY`          | API key (supports project-scoped `sk-proj-...`)                                            |
+| `OPENAI_API_KEY`          | API key (supports project-scoped `sk-proj-*`)                                              |
 | `OPENAI_PROJECT_ID`       | Required for `sk-proj-*` keys                                                              |
-| `OPENAI_MODEL`            | Model name (e.g., `gpt-4o-mini-2024-07-18`, `nemotron-4-340b-instruct`)                    |
+| `OPENAI_MODEL`            | Model name (e.g., `gpt-4o-mini-2024-07-18`)                                                |
 | `AI_BASH_SANDBOX`         | Safe directory for file operations                                                         |
-| `AI_BASH_MAX_STDIO_BYTES` | Max captured stdout/stderr bytes (default 131072)                                          |
-| `AI_BASH_FAST_MODE`       | Skip planner/critic for faster response (1=on)                                             |
+| `AI_BASH_MAX_STDIO_BYTES` | Max captured stdout/stderr bytes                                                           |
+| `AI_BASH_FAST_MODE`       | Skip planner/critic (1=on)                                                                 |
 | `AI_BASH_DEBUG`           | Enable debug output (1=on)                                                                 |
-| `AI_BASH_AUTO_CONFIRM`    | Automatically run flagged commands (use cautiously)                                        |
+| `AI_BASH_AUTO_CONFIRM`    | Automatically run flagged commands (use with caution)                                      |
 | `AI_BASH_NL2CMD`          | Enable NL→CMD conversion logic (1=on)                                                      |
 
 ---
@@ -203,65 +204,62 @@ Example session:
 ### 1️⃣ Fast Paths
 
 * `use:` or `run:` executes the command directly (no LLM).
-* Works even with natural phrasing:
-  `run tree in the current directory` → normalized to `tree .`
+* Example: `run tree in the current directory` → normalized to `tree .`
 
 ### 2️⃣ NL→CMD→RUN
 
-* AI Bash sends your text through `prompts/nl2cmd.md`.
-* The model returns JSON:
+* AI Bash sends your input to `prompts/nl2cmd.md`.
+* The model returns strict JSON:
 
   ```json
   { "cmd": "find . -type f | sort -nr | head -n 5", "reason": "list largest files", "needs_confirmation": false }
   ```
-* The shell executes the command (after confirmation if risky).
+* Shell executes the command safely (after confirmation if required).
 
 ### 3️⃣ Tool Loop (Function Calling)
 
-* If no single command fits, the model calls Python tools:
+* When tasks are more complex, the LLM calls registered tools:
 
-  * `run_cmd` (shell)
+  * `run_cmd`
   * `read_file`, `write_file`, `append_file`
   * `http_get`
-  * `sys_info`, `which`, etc.
+  * `sys_info`, `which`
 
 ---
 
 ## 🛡️ Safety & Sandbox
 
-* All commands run under `AI_BASH_SANDBOX`.
-* Dangerous patterns are blocked or require confirmation:
-
-  * `rm -rf /`, `mkfs`, `dd if=`, `shutdown`, `reboot`, `sudo`, etc.
-* Add or modify patterns in `BANNED_SNIPPETS` inside `src/loop.py`.
+* Commands execute only inside `AI_BASH_SANDBOX`.
+* Risky commands (`rm -rf /`, `mkfs`, `dd`, `sudo`, etc.) are blocked or require confirmation.
+* Customize allowed patterns in `BANNED_SNIPPETS` in `src/loop.py`.
 
 ---
 
 ## 🧪 Troubleshooting
 
-| Issue                            | Fix                                                                                       |
-| -------------------------------- | ----------------------------------------------------------------------------------------- |
-| **401 Unauthorized**             | Ensure `OPENAI_API_KEY` and `OPENAI_PROJECT_ID` are correct. Use `curl` to test API.      |
-| **400 Tool message order error** | You’re already fixed — the current loop properly appends tool calls before results.       |
-| **“Command not available”**      | The shell now runs `which <cmd>` to verify availability. If `tree` exists, it runs.       |
-| **Command hangs**                | Commands have built-in 20s timeout. For large directory trees, use `find` with `head -n`. |
-| **Windows line endings (CRLF)**  | Normalize: `sed -i 's/\r$//' bin/ai-sh src/**/*.py`                                       |
+| Issue                 | Resolution                                                                    |
+| --------------------- | ----------------------------------------------------------------------------- |
+| **401 Unauthorized**  | Verify `OPENAI_API_KEY` and `OPENAI_PROJECT_ID`. Test with `curl`.            |
+| **400 Bad Request**   | Already fixed — ensure correct tool message order.                            |
+| **Command not found** | The tool verifies with `which <cmd>` before reporting missing.                |
+| **Command hangs**     | Commands have 20s timeout. Prefer lightweight alternatives (`find` + `head`). |
+| **CRLF line endings** | Normalize: `sed -i 's/\r$//' bin/ai-sh src/**/*.py`                           |
 
 ---
 
 ## 🧰 Useful Examples
 
 ```bash
-# Fast file listing
+# Largest files
 use: find . -type f -printf "%s\t%p\n" | sort -nr | head -n 20
 
-# Show directory tree
+# Directory tree
 use: tree -sh .
 
 # Search logs
 use: grep -Rni "ERROR" . | head -n 50
 
-# Summarize kernel logs
+# Summarize system logs
 run: dmesg | tail -n 200
 ```
 
@@ -269,27 +267,27 @@ run: dmesg | tail -n 200
 
 ## 🧑‍💻 Developer Setup
 
-### Code formatting
+### Formatting and Linting
 
 ```bash
 black src/
 flake8 src/
 ```
 
-### Run interactive shell (debug mode)
+### Run in Debug Mode
 
 ```bash
 export AI_BASH_DEBUG=1
 ./bin/ai-sh
 ```
 
-### Update requirements
+### Update Dependencies
 
 ```bash
 pip freeze > requirements.txt
 ```
 
-### Run locally with different models
+### Test with Another Model
 
 ```bash
 OPENAI_MODEL=nemotron-4-340b-instruct ./bin/ai-sh
@@ -299,16 +297,16 @@ OPENAI_MODEL=nemotron-4-340b-instruct ./bin/ai-sh
 
 ## 📜 License & Credits
 
-**License:** MIT (or choose another if you prefer)
+**License:** MIT (or your preferred license)
 
 **Credits:**
 
-* Inspired by NVIDIA’s [“Bash Computer-Use Agent”](https://developer.nvidia.com/blog/create-your-own-bash-computer-use-agent-with-nvidia-nemotron-in-one-hour/)
-* Extended for cross-provider use, sandboxing, and direct `use:` / `run:` control.
+* Inspired by NVIDIA’s [Bash Computer-Use Agent](https://developer.nvidia.com/blog/create-your-own-bash-computer-use-agent-with-nvidia-nemotron-in-one-hour/).
+* Extended for sandboxing, OpenAI/Nemotron integration, and natural-language-to-command execution.
 
 ---
 
-### 💬 Example Session
+## 💬 Example Session
 
 ```
 🤖 AI Bash: type your task. Ctrl+C to exit.
@@ -323,8 +321,6 @@ OPENAI_MODEL=nemotron-4-340b-instruct ./bin/ai-sh
 > exit
 👋 Exiting AI Bash — see you next time!
 ```
-
----
 
 ```
 
