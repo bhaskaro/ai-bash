@@ -1,0 +1,14 @@
+# Core runtime
+requests>=2.31.0
+python-dotenv>=1.0.1
+
+# Optional but helpful for JSON display and debugging
+rich>=13.7.0
+
+# For local LLM execution safety/timeouts
+psutil>=5.9.8
+
+# Formatting / linting (optional, dev only)
+black>=24.4.2
+flake8>=7.0.0
+

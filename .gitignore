@@ -1,0 +1,50 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.so
+*.egg-info/
+.eggs/
+.build/
+dist/
+build/
+.coverage
+htmlcov/
+.pytest_cache/
+.mypy_cache/
+.dmypy.json
+.pyre/
+
+# Virtual environments
+.venv/
+venv/
+env/
+ENV/
+
+# OS / editors
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Project
+.env
+.env.*
+!.env.example
+*.log
+logs/
+.tmp/
+cache/
+
+# Notebooks
+.ipynb_checkpoints/
+
+# Node (if you later add UI pieces)
+node_modules/
+npm-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
